@@ -835,6 +835,180 @@
                 <!-- Firebase Management Section -->
                 <div class="bg-white rounded-xl card-shadow card-content mt-8">
                     <h3 class="text-lg font-semibold text-gray-800 mb-4">🔥 Manajemen Firebase</h3>
+                    
+                    <!-- Firebase Setup Guide -->
+                    <div id="firebaseSetupGuide" class="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
+                        <h4 class="font-semibold text-blue-900 mb-4">🔥 Panduan Setup Firebase Lengkap</h4>
+                        
+                        <!-- Current Status -->
+                        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4">
+                            <p class="text-sm text-yellow-800">
+                                <strong>Status:</strong> Saat ini menggunakan penyimpanan lokal browser. 
+                                Data tersimpan aman di perangkat ini, namun tidak tersinkron antar device.
+                            </p>
+                        </div>
+                        
+                        <!-- Step by Step Guide -->
+                        <div class="space-y-4">
+                            <div class="border-l-4 border-blue-500 pl-4">
+                                <h5 class="font-semibold text-blue-900 mb-2">📋 Langkah 1: Buat Project Firebase</h5>
+                                <ol class="list-decimal list-inside space-y-1 text-sm text-blue-800">
+                                    <li>Buka <a href="https://console.firebase.google.com" target="_blank" class="text-blue-600 underline font-medium">Firebase Console</a></li>
+                                    <li>Klik "Add project" atau "Tambah project"</li>
+                                    <li>Masukkan nama project: <code class="bg-gray-100 px-2 py-1 rounded">absensi-ppsu-pisangan</code></li>
+                                    <li>Disable Google Analytics (tidak diperlukan)</li>
+                                    <li>Klik "Create project"</li>
+                                </ol>
+                            </div>
+                            
+                            <div class="border-l-4 border-green-500 pl-4">
+                                <h5 class="font-semibold text-green-900 mb-2">🗄️ Langkah 2: Setup Realtime Database</h5>
+                                <ol class="list-decimal list-inside space-y-1 text-sm text-green-800">
+                                    <li>Di sidebar kiri, pilih "Realtime Database"</li>
+                                    <li>Klik "Create Database"</li>
+                                    <li>Pilih lokasi: <strong>asia-southeast1 (Singapore)</strong></li>
+                                    <li>Pilih "Start in test mode" (untuk development)</li>
+                                    <li>Klik "Enable"</li>
+                                </ol>
+                            </div>
+                            
+                            <div class="border-l-4 border-purple-500 pl-4">
+                                <h5 class="font-semibold text-purple-900 mb-2">⚙️ Langkah 3: Dapatkan Konfigurasi</h5>
+                                <ol class="list-decimal list-inside space-y-1 text-sm text-purple-800">
+                                    <li>Klik ⚙️ (Settings) di sidebar → "Project settings"</li>
+                                    <li>Scroll ke bawah, klik "Add app" → pilih Web (</> icon)</li>
+                                    <li>Masukkan app nickname: <code class="bg-gray-100 px-2 py-1 rounded">Absensi PPSU</code></li>
+                                    <li>Jangan centang "Firebase Hosting"</li>
+                                    <li>Klik "Register app"</li>
+                                    <li><strong>Salin konfigurasi yang muncul!</strong></li>
+                                </ol>
+                            </div>
+                            
+                            <div class="border-l-4 border-red-500 pl-4">
+                                <h5 class="font-semibold text-red-900 mb-2">🔧 Langkah 4: Update Kode</h5>
+                                <div class="text-sm text-red-800 space-y-2">
+                                    <p>Ganti konfigurasi di baris 1104-1112 dengan konfigurasi Anda:</p>
+                                    <div class="bg-gray-900 text-green-400 p-3 rounded text-xs overflow-x-auto">
+<pre>const firebaseConfig = {
+  apiKey: "AIzaSyXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+  authDomain: "absensi-ppsu-pisangan.firebaseapp.com",
+  databaseURL: "https://absensi-ppsu-pisangan-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "absensi-ppsu-pisangan",
+  storageBucket: "absensi-ppsu-pisangan.appspot.com",
+  messagingSenderId: "123456789012",
+  appId: "1:123456789012:web:abcdef123456789"
+};</pre>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="border-l-4 border-orange-500 pl-4">
+                                <h5 class="font-semibold text-orange-900 mb-2">🔒 Langkah 5: Set Database Rules</h5>
+                                <div class="text-sm text-orange-800 space-y-2">
+                                    <p>Di Realtime Database → Rules tab, ganti rules dengan:</p>
+                                    <div class="bg-gray-900 text-yellow-400 p-3 rounded text-xs overflow-x-auto">
+<pre>{
+  "rules": {
+    ".read": true,
+    ".write": true
+  }
+}</pre>
+                                    </div>
+                                    <p class="text-xs text-orange-600">⚠️ Rules ini untuk development. Untuk production, gunakan rules yang lebih aman.</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Benefits -->
+                        <div class="mt-6 bg-green-50 border border-green-200 rounded-lg p-4">
+                            <h5 class="font-semibold text-green-900 mb-2">✅ Keuntungan Firebase:</h5>
+                            <ul class="list-disc list-inside text-sm text-green-800 space-y-1">
+                                <li>Data tersinkron real-time antar semua device</li>
+                                <li>Backup otomatis ke cloud Google</li>
+                                <li>Akses dari mana saja dengan internet</li>
+                                <li>Tidak hilang meski browser di-reset</li>
+                                <li>Multiple admin bisa akses bersamaan</li>
+                            </ul>
+                        </div>
+                        
+                        <!-- Production Rules -->
+                        <div class="mt-4 bg-purple-50 border border-purple-200 rounded-lg p-4">
+                            <h5 class="font-semibold text-purple-900 mb-2">🔐 Rules untuk Production (Aman)</h5>
+                            <p class="text-sm text-purple-800 mb-3">Setelah testing selesai, ganti dengan rules yang lebih aman:</p>
+                            <div class="bg-gray-900 text-purple-400 p-3 rounded text-xs overflow-x-auto">
+<pre>{
+  "rules": {
+    "attendanceData": {
+      ".read": true,
+      ".write": true,
+      ".validate": "newData.hasChildren(['name', 'date', 'timeIn', 'timeOut'])"
+    },
+    "activeSessions": {
+      ".read": true,
+      ".write": true,
+      ".validate": "newData.hasChildren(['name', 'date', 'timeIn'])"
+    },
+    "employeeList": {
+      ".read": true,
+      ".write": true
+    },
+    "selectedEmployee": {
+      ".read": true,
+      ".write": true
+    },
+    "$other": {
+      ".read": false,
+      ".write": false
+    }
+  }
+}</pre>
+                            </div>
+                            <div class="mt-3 space-y-1 text-xs text-purple-700">
+                                <p>• <strong>attendanceData:</strong> Validasi data kehadiran harus lengkap</p>
+                                <p>• <strong>activeSessions:</strong> Validasi sesi aktif minimal ada nama, tanggal, jam masuk</p>
+                                <p>• <strong>employeeList:</strong> Daftar karyawan bisa dibaca/tulis</p>
+                                <p>• <strong>$other:</strong> Path lain tidak bisa diakses (keamanan)</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Advanced Security Rules -->
+                        <div class="mt-4 bg-indigo-50 border border-indigo-200 rounded-lg p-4">
+                            <h5 class="font-semibold text-indigo-900 mb-2">🛡️ Rules Super Aman (dengan Authentication)</h5>
+                            <p class="text-sm text-indigo-800 mb-3">Jika ingin keamanan maksimal, aktifkan Firebase Auth dan gunakan:</p>
+                            <div class="bg-gray-900 text-indigo-400 p-3 rounded text-xs overflow-x-auto">
+<pre>{
+  "rules": {
+    ".read": "auth != null",
+    ".write": "auth != null",
+    "attendanceData": {
+      ".validate": "newData.hasChildren(['name', 'date', 'timeIn', 'timeOut'])",
+      "$recordId": {
+        ".validate": "newData.child('name').isString() && newData.child('date').isString()"
+      }
+    },
+    "activeSessions": {
+      ".validate": "newData.hasChildren(['name', 'date', 'timeIn'])"
+    }
+  }
+}</pre>
+                            </div>
+                            <p class="text-xs text-indigo-600 mt-2">⚠️ Memerlukan setup Firebase Authentication terlebih dahulu</p>
+                        </div>
+                        
+                        <!-- Troubleshooting -->
+                        <div class="mt-4 bg-red-50 border border-red-200 rounded-lg p-4">
+                            <h5 class="font-semibold text-red-900 mb-2">🚨 Troubleshooting:</h5>
+                            <ul class="list-disc list-inside text-sm text-red-800 space-y-1">
+                                <li><strong>Error "Permission denied":</strong> Periksa Database Rules</li>
+                                <li><strong>Error "Network error":</strong> Periksa koneksi internet</li>
+                                <li><strong>Error "Invalid config":</strong> Periksa konfigurasi Firebase</li>
+                                <li><strong>Data tidak sync:</strong> Refresh halaman atau periksa console browser</li>
+                                <li><strong>Rules tidak berlaku:</strong> Tunggu 1-2 menit setelah update rules</li>
+                                <li><strong>CORS error:</strong> Pastikan domain sudah terdaftar di Firebase Console</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                         <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
                             <h4 class="font-semibold text-blue-900 mb-2">📊 Status Database</h4>
@@ -1098,18 +1272,23 @@
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         import { getDatabase, ref, set, get, push, onValue, off } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
 
-        // Firebase configuration - REAL WORKING CONFIG
+        // Firebase configuration - Demo/Testing Config
+        // PENTING: Ganti dengan konfigurasi Firebase Anda yang sebenarnya
         const firebaseConfig = {
-  apiKey: "AIzaSyBFPQf3pWuFIZCJ2XkgRLNb_ODiMqK0Y1k",
-  authDomain: "absensi-ppsu-pisbar.firebaseapp.com",
-  projectId: "absensi-ppsu-pisbar",
-  storageBucket: "absensi-ppsu-pisbar.firebasestorage.app",
-  messagingSenderId: "406774777355",
-  appId: "1:406774777355:web:f9d77e6ed26a6be684a90e",
-  measurementId: "G-S80MMYX635"
+  apiKey: "AIzaSyD26mSDHSGsjIMEAPtZgN-jd-ODViXe15E",
+  authDomain: "absensi-ppsu-pisbar-f80f5.firebaseapp.com",
+  projectId: "absensi-ppsu-pisbar-f80f5",
+  storageBucket: "absensi-ppsu-pisbar-f80f5.firebasestorage.app",
+  messagingSenderId: "1041519647379",
+  appId: "1:1041519647379:web:c3c57c5fba975ee8558b66"
 };
-        // ✅ Firebase sudah dikonfigurasi dan siap digunakan
-        // Database Rules sudah diatur untuk allow read/write
+        };
+
+        // ⚠️ DEMO MODE: Menggunakan localStorage sebagai fallback
+        // Untuk menggunakan Firebase yang sebenarnya:
+        // 1. Buat project di https://console.firebase.google.com
+        // 2. Aktifkan Realtime Database
+        // 3. Ganti konfigurasi di atas dengan konfigurasi project Anda
 
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
@@ -1130,42 +1309,36 @@
         
         // Test Firebase connection
         async function testFirebaseConnection() {
-            console.log('🔄 Connecting to Firebase...');
+            console.log('🔄 Testing Firebase connection...');
             
             try {
-                // Test basic connection
-                const testRef = ref(database, '.info/connected');
-                onValue(testRef, (snapshot) => {
-                    const connected = snapshot.val();
-                    console.log('🔗 Firebase connection status:', connected);
-                    isFirebaseConnected = connected;
-                    updateConnectionStatus();
-                    
-                    if (connected) {
-                        console.log('🎉 Firebase connected successfully!');
-                        loadDataFromFirebase();
-                    } else {
-                        console.log('⚠️ Firebase disconnected, using local storage');
-                        loadDataFromLocalStorage();
-                    }
-                });
-                
-                // Try to read/write test data
+                // Try to initialize Firebase with demo config
                 const testDataRef = ref(database, 'connectionTest');
                 await set(testDataRef, { timestamp: Date.now(), status: 'connected' });
                 const snapshot = await get(testDataRef);
                 
                 if (snapshot.exists()) {
-                    console.log('✅ Firebase read/write test successful!');
+                    console.log('✅ Firebase connected successfully!');
+                    isFirebaseConnected = true;
+                    updateConnectionStatus();
+                    
                     // Clean up test data
                     await set(testDataRef, null);
+                    
+                    // Load existing data from Firebase
+                    loadDataFromFirebase();
                     return true;
                 } else {
-                    throw new Error('Failed to read test data');
+                    throw new Error('Firebase read test failed');
                 }
                 
             } catch (error) {
-                console.error('❌ Firebase connection failed:', error);
+                console.log('⚠️ Firebase tidak tersedia, menggunakan localStorage');
+                console.log('Untuk menggunakan Firebase:');
+                console.log('1. Buat project di https://console.firebase.google.com');
+                console.log('2. Aktifkan Realtime Database');
+                console.log('3. Ganti konfigurasi Firebase di kode');
+                
                 isFirebaseConnected = false;
                 updateConnectionStatus();
                 loadDataFromLocalStorage();
@@ -1190,12 +1363,12 @@
             if (dotElement && textElement) {
                 if (isFirebaseConnected) {
                     dotElement.className = 'w-3 h-3 bg-green-500 rounded-full connection-dot-connected';
-                    textElement.textContent = 'Terhubung';
+                    textElement.textContent = 'Firebase Aktif';
                     textElement.className = 'text-sm text-green-600 font-medium';
                 } else {
-                    dotElement.className = 'w-3 h-3 bg-yellow-500 rounded-full animate-pulse';
-                    textElement.textContent = 'Menghubungkan...';
-                    textElement.className = 'text-sm text-gray-600';
+                    dotElement.className = 'w-3 h-3 bg-blue-500 rounded-full animate-pulse';
+                    textElement.textContent = 'Mode Lokal';
+                    textElement.className = 'text-sm text-blue-600 font-medium';
                 }
             }
             
@@ -1324,10 +1497,19 @@
             });
         }
         
-        // Save data to Firebase
+        // Save data to Firebase and localStorage
         async function saveDataToFirebase(dataType, data) {
+            // Always save to localStorage first (as backup)
+            try {
+                localStorage.setItem(dataType, JSON.stringify(data));
+                console.log(`✅ ${dataType} saved to localStorage`);
+            } catch (error) {
+                console.error(`❌ Error saving ${dataType} to localStorage:`, error);
+            }
+            
+            // Try to save to Firebase if connected
             if (!isFirebaseConnected) {
-                console.log('Firebase not connected, saving to localStorage only');
+                console.log('Firebase not connected, data saved to localStorage only');
                 return false;
             }
             
@@ -1338,6 +1520,7 @@
                 return true;
             } catch (error) {
                 console.error(`❌ Error saving ${dataType} to Firebase:`, error);
+                console.log('Data tetap tersimpan di localStorage');
                 return false;
             }
         }
@@ -2288,14 +2471,19 @@
             const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
             document.getElementById('dayOfWeek').value = days[today.getDay()];
             
-            // Initialize Firebase connection
-            if (typeof window.initializeFirebase === 'function') {
-                window.initializeFirebase();
-            } else {
-                // Fallback to localStorage if Firebase is not available
-                console.log('Firebase not available, using localStorage');
-                loadDataFromLocalStorage();
-            }
+            // Load data from localStorage first (immediate)
+            loadDataFromLocalStorage();
+            console.log('✅ Data loaded from localStorage');
+            
+            // Then try to initialize Firebase connection
+            setTimeout(() => {
+                if (typeof window.testFirebaseConnection === 'function') {
+                    window.testFirebaseConnection();
+                } else {
+                    console.log('⚠️ Firebase functions not available, using localStorage only');
+                    updateConnectionStatus();
+                }
+            }, 1000);
             
             showPage('realtime');
         };
@@ -3693,5 +3881,5 @@
             showNotification('Rekap berhasil diekspor ke Excel!', 'success');
         }
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'973a854082559f68',t:'MTc1NTk1MTE3MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'973af77415a3ce82',t:'MTc1NTk1NTg0OC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
