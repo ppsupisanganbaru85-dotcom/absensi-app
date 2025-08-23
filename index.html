@@ -289,6 +289,13 @@
         <div class="container mx-auto px-4">
             <h1 class="text-xl sm:text-2xl lg:text-3xl font-bold text-center">📊 Absensi PPSU Pisangan Baru</h1>
             
+            <!-- Connection Status -->
+            <div class="text-center mt-2">
+                <div id="connectionStatus" class="inline-block">
+                    <span class="status-indicator status-info">🔄 Menghubungkan ke database...</span>
+                </div>
+            </div>
+            
             <!-- Navigation -->
             <div class="flex flex-col sm:flex-row justify-center mt-4 sm:mt-6 gap-3 sm:gap-4 nav-buttons px-2 sm:px-4">
                 <button onclick="showPage('realtime')" id="realtimeBtn" class="bg-white bg-opacity-30 hover:bg-opacity-40 text-white px-4 py-3 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2 btn-responsive w-full sm:w-auto">
@@ -1002,10 +1009,233 @@
         </div>
     </footer>
 
+    <!-- Firebase SDK -->
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getDatabase, ref, set, get, push, onValue, off } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+
+        // Firebase configuration - GANTI DENGAN KONFIGURASI ANDA
+        const firebaseConfig = {
+  apiKey: "AIzaSyDhtb3vYVPopaNHyhUlHaxsFhA6_gbyDvg",
+  authDomain: "aplikasi-laporan-ppsu.firebaseapp.com",
+  projectId: "aplikasi-laporan-ppsu",
+  storageBucket: "aplikasi-laporan-ppsu.firebasestorage.app",
+  messagingSenderId: "990462370722",
+  appId: "1:990462370722:web:4ab77301f1decdfc1c88fb",
+  measurementId: "G-7T6X3MMYEH"
+};
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+        
+        // Global variables for Firebase
+        window.firebaseApp = app;
+        window.firebaseDatabase = database;
+        window.firebaseRef = ref;
+        window.firebaseSet = set;
+        window.firebaseGet = get;
+        window.firebasePush = push;
+        window.firebaseOnValue = onValue;
+        window.firebaseOff = off;
+        
+        // Connection status
+        let isFirebaseConnected = false;
+        
+        // Test Firebase connection
+        async function testFirebaseConnection() {
+            try {
+                const testRef = ref(database, '.info/connected');
+                onValue(testRef, (snapshot) => {
+                    isFirebaseConnected = snapshot.val();
+                    updateConnectionStatus();
+                });
+                
+                // Try to read data
+                const dataRef = ref(database, 'attendanceData');
+                const snapshot = await get(dataRef);
+                console.log('Firebase connection successful!');
+                loadDataFromFirebase();
+                return true;
+            } catch (error) {
+                console.error('Firebase connection failed:', error);
+                isFirebaseConnected = false;
+                updateConnectionStatus();
+                loadDataFromLocalStorage();
+                return false;
+            }
+        }
+        
+        // Update connection status indicator
+        function updateConnectionStatus() {
+            const statusElement = document.getElementById('connectionStatus');
+            if (statusElement) {
+                if (isFirebaseConnected) {
+                    statusElement.innerHTML = '<span class="status-indicator status-success">🟢 Online - Data tersinkronisasi</span>';
+                } else {
+                    statusElement.innerHTML = '<span class="status-indicator status-warning">🟡 Offline - Menggunakan data lokal</span>';
+                }
+            }
+        }
+        
+        // Load data from Firebase
+        async function loadDataFromFirebase() {
+            try {
+                // Load attendance data
+                const attendanceRef = ref(database, 'attendanceData');
+                const attendanceSnapshot = await get(attendanceRef);
+                if (attendanceSnapshot.exists()) {
+                    window.attendanceData = Object.values(attendanceSnapshot.val());
+                    localStorage.setItem('attendanceData', JSON.stringify(window.attendanceData));
+                }
+                
+                // Load active sessions
+                const sessionsRef = ref(database, 'activeSessions');
+                const sessionsSnapshot = await get(sessionsRef);
+                if (sessionsSnapshot.exists()) {
+                    window.activeSessions = Object.values(sessionsSnapshot.val());
+                    localStorage.setItem('activeSessions', JSON.stringify(window.activeSessions));
+                }
+                
+                // Load employee list
+                const employeesRef = ref(database, 'employeeList');
+                const employeesSnapshot = await get(employeesRef);
+                if (employeesSnapshot.exists()) {
+                    window.employeeList = employeesSnapshot.val();
+                    localStorage.setItem('employeeList', JSON.stringify(window.employeeList));
+                }
+                
+                // Load selected employee
+                const selectedRef = ref(database, 'selectedEmployee');
+                const selectedSnapshot = await get(selectedRef);
+                if (selectedSnapshot.exists()) {
+                    window.selectedEmployee = selectedSnapshot.val();
+                    localStorage.setItem('selectedEmployee', window.selectedEmployee);
+                }
+                
+                // Load login status
+                const loginRef = ref(database, 'isLoggedIn');
+                const loginSnapshot = await get(loginRef);
+                if (loginSnapshot.exists()) {
+                    window.isLoggedIn = loginSnapshot.val();
+                    localStorage.setItem('isLoggedIn', JSON.stringify(window.isLoggedIn));
+                }
+                
+                console.log('Data loaded from Firebase successfully!');
+                
+                // Set up real-time listeners
+                setupRealtimeListeners();
+                
+            } catch (error) {
+                console.error('Error loading data from Firebase:', error);
+                loadDataFromLocalStorage();
+            }
+        }
+        
+        // Setup real-time listeners
+        function setupRealtimeListeners() {
+            // Listen for attendance data changes
+            const attendanceRef = ref(database, 'attendanceData');
+            onValue(attendanceRef, (snapshot) => {
+                if (snapshot.exists()) {
+                    window.attendanceData = Object.values(snapshot.val());
+                    localStorage.setItem('attendanceData', JSON.stringify(window.attendanceData));
+                    
+                    // Update UI if on admin page
+                    if (window.currentPage === 'manual' && window.isLoggedIn) {
+                        window.renderTable();
+                        window.renderDashboard();
+                        window.updateSummary();
+                    }
+                }
+            });
+            
+            // Listen for active sessions changes
+            const sessionsRef = ref(database, 'activeSessions');
+            onValue(sessionsRef, (snapshot) => {
+                if (snapshot.exists()) {
+                    window.activeSessions = Object.values(snapshot.val());
+                    localStorage.setItem('activeSessions', JSON.stringify(window.activeSessions));
+                    
+                    // Update UI if on realtime page
+                    if (window.currentPage === 'realtime') {
+                        window.renderActiveSessions();
+                    }
+                }
+            });
+            
+            // Listen for employee list changes
+            const employeesRef = ref(database, 'employeeList');
+            onValue(employeesRef, (snapshot) => {
+                if (snapshot.exists()) {
+                    window.employeeList = snapshot.val();
+                    localStorage.setItem('employeeList', JSON.stringify(window.employeeList));
+                    
+                    // Update UI if on realtime page
+                    if (window.currentPage === 'realtime') {
+                        window.renderEmployeeButtons();
+                    }
+                }
+            });
+        }
+        
+        // Save data to Firebase
+        async function saveDataToFirebase(dataType, data) {
+            if (!isFirebaseConnected) {
+                console.log('Firebase not connected, saving to localStorage only');
+                return false;
+            }
+            
+            try {
+                const dataRef = ref(database, dataType);
+                await set(dataRef, data);
+                console.log(`${dataType} saved to Firebase successfully!`);
+                return true;
+            } catch (error) {
+                console.error(`Error saving ${dataType} to Firebase:`, error);
+                return false;
+            }
+        }
+        
+        // Load data from localStorage (fallback)
+        function loadDataFromLocalStorage() {
+            window.attendanceData = JSON.parse(localStorage.getItem('attendanceData')) || [];
+            window.activeSessions = JSON.parse(localStorage.getItem('activeSessions')) || [];
+            window.employeeList = JSON.parse(localStorage.getItem('employeeList')) || [
+                'Achmad Rosidi', 'Ade Kurniawan', 'Al Azahar', 'Alwi', 'Arif Abdul Rahman',
+                'Asep', 'Chandra Darmawan', 'Daday Sukandar', 'Dea Sabilah Handriyani', 'Deni Arcis',
+                'Dewo Panca Pamungkas', 'Dimas Herwinto Pradana', 'Eris Sumiadi', 'Fida Marzuki Putra', 'Herdinsah',
+                'Hermansyah', 'Hikmatun Nisa', 'Ihsan Muttaqien', 'Ilham Prayitno Yudo', 'Indra Jaya',
+                'Irfan Mahadi', 'M. Yusuf', 'Maryanto', 'Mohamad Irwan Yulianto', 'Muhammad Khomeini',
+                'Nur Iman', 'Nuryana', 'Puji Lestari', 'Pujiyanto', 'Rafly Nugraha',
+                'Rahman', 'Rahmat Agustio', 'Reynaldi Saputra', 'Rizky Prasetia', 'Rohmah',
+                'Sabar Minggudi', 'Siti Marsah', 'Suhanda', 'Supardi', 'Suwandi',
+                'Syaiful Huda', 'Tri Julianto', 'Wiyono Fauzy'
+            ];
+            window.selectedEmployee = localStorage.getItem('selectedEmployee') || null;
+            window.isLoggedIn = JSON.parse(localStorage.getItem('isLoggedIn')) || false;
+            
+            console.log('Data loaded from localStorage (fallback mode)');
+        }
+        
+        // Expose functions globally
+        window.testFirebaseConnection = testFirebaseConnection;
+        window.saveDataToFirebase = saveDataToFirebase;
+        window.loadDataFromFirebase = loadDataFromFirebase;
+        window.loadDataFromLocalStorage = loadDataFromLocalStorage;
+        
+        // Initialize Firebase when page loads
+        window.addEventListener('load', () => {
+            testFirebaseConnection();
+        });
+        
+    </script>
+
     <script>
-        let attendanceData = JSON.parse(localStorage.getItem('attendanceData')) || [];
-        let activeSessions = JSON.parse(localStorage.getItem('activeSessions')) || [];
-        let employeeList = JSON.parse(localStorage.getItem('employeeList')) || [
+        let attendanceData = [];
+        let activeSessions = [];
+        let employeeList = [
             'Achmad Rosidi', 'Ade Kurniawan', 'Al Azahar', 'Alwi', 'Arif Abdul Rahman',
             'Asep', 'Chandra Darmawan', 'Daday Sukandar', 'Dea Sabilah Handriyani', 'Deni Arcis',
             'Dewo Panca Pamungkas', 'Dimas Herwinto Pradana', 'Eris Sumiadi', 'Fida Marzuki Putra', 'Herdinsah',
@@ -1396,6 +1626,9 @@
             employeeList.push(formattedName);
             localStorage.setItem('employeeList', JSON.stringify(employeeList));
             
+            // Save to Firebase
+            saveDataToFirebase('employeeList', employeeList);
+            
             // Clear search and select the new employee
             document.getElementById('employeeSearch').value = '';
             document.getElementById('quickAddSection').style.display = 'none';
@@ -1577,6 +1810,10 @@
 
                 activeSessions.push(newSession);
                 localStorage.setItem('activeSessions', JSON.stringify(activeSessions));
+                
+                // Save to Firebase
+                saveDataToFirebase('activeSessions', activeSessions);
+                
                 showNotification(`✅ ${name} berhasil absen masuk pada ${currentTime}!`, 'success');
 
             } else if (attendanceType === 'keluar') {
@@ -1616,6 +1853,10 @@
                 attendanceData.push(completedRecord);
                 localStorage.setItem('attendanceData', JSON.stringify(attendanceData));
                 localStorage.setItem('activeSessions', JSON.stringify(activeSessions));
+
+                // Save to Firebase
+                saveDataToFirebase('attendanceData', attendanceData);
+                saveDataToFirebase('activeSessions', activeSessions);
 
                 showNotification(`✅ ${name} berhasil absen keluar pada ${currentTime}!`, 'success');
                 
@@ -1829,38 +2070,16 @@
             const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
             document.getElementById('dayOfWeek').value = days[today.getDay()];
             
-            attendanceData = JSON.parse(localStorage.getItem('attendanceData')) || [];
-            activeSessions = JSON.parse(localStorage.getItem('activeSessions')) || [];
-            employeeList = JSON.parse(localStorage.getItem('employeeList')) || [
-                'Achmad Rosidi', 'Ade Kurniawan', 'Al Azahar', 'Alwi', 'Arif Abdul Rahman',
-                'Asep', 'Chandra Darmawan', 'Daday Sukandar', 'Dea Sabilah Handriyani', 'Deni Arcis',
-                'Dewo Panca Pamungkas', 'Dimas Herwinto Pradana', 'Eris Sumiadi', 'Fida Marzuki Putra', 'Herdinsah',
-                'Hermansyah', 'Hikmatun Nisa', 'Ihsan Muttaqien', 'Ilham Prayitno Yudo', 'Indra Jaya',
-                'Irfan Mahadi', 'M. Yusuf', 'Maryanto', 'Mohamad Irwan Yulianto', 'Muhammad Khomeini',
-                'Nur Iman', 'Nuryana', 'Puji Lestari', 'Pujiyanto', 'Rafly Nugraha',
-                'Rahman', 'Rahmat Agustio', 'Reynaldi Saputra', 'Rizky Prasetia', 'Rohmah',
-                'Sabar Minggudi', 'Siti Marsah', 'Suhanda', 'Supardi', 'Suwandi',
-                'Syaiful Huda', 'Tri Julianto', 'Wiyono Fauzy'
-            ];
-            selectedEmployee = localStorage.getItem('selectedEmployee') || null;
-            isLoggedIn = JSON.parse(localStorage.getItem('isLoggedIn')) || false;
-            
-            if (isLoggedIn) {
-                document.getElementById('logoutBtn').classList.remove('hidden');
-            }
-            
-            renderEmployeeButtons();
-            
-            if (selectedEmployee) {
-                selectEmployee(selectedEmployee);
+            // Initialize Firebase connection
+            if (typeof window.initializeFirebase === 'function') {
+                window.initializeFirebase();
+            } else {
+                // Fallback to localStorage if Firebase is not available
+                console.log('Firebase not available, using localStorage');
+                loadDataFromLocalStorage();
             }
             
             showPage('realtime');
-            
-            renderTable();
-            renderDashboard();
-            updateSummary();
-            renderActiveSessions();
         };
 
         // Fungsi untuk menghitung selisih waktu dalam menit
@@ -2033,6 +2252,9 @@
 
             attendanceData.push(newRecord);
             localStorage.setItem('attendanceData', JSON.stringify(attendanceData));
+            
+            // Save to Firebase
+            saveDataToFirebase('attendanceData', attendanceData);
             
             renderTable();
             renderDashboard();
@@ -3153,5 +3375,5 @@
             showNotification('Rekap berhasil diekspor ke Excel!', 'success');
         }
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9737a312444eba25',t:'MTc1NTkyMDkzNS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9739b70b7231f91a',t:'MTc1NTk0MjcyNS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
