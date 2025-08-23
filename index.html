@@ -244,15 +244,6 @@
             50% { opacity: .5; }
         }
         
-        .connection-dot-connected {
-            animation: blink 2s ease-in-out infinite;
-        }
-        
-        @keyframes blink {
-            0%, 50% { opacity: 1; }
-            51%, 100% { opacity: 0.3; }
-        }
-        
         .status-indicator {
             display: inline-flex;
             align-items: center;
@@ -297,8 +288,6 @@
     <div class="gradient-bg text-white py-6 sm:py-8">
         <div class="container mx-auto px-4">
             <h1 class="text-xl sm:text-2xl lg:text-3xl font-bold text-center">📊 Absensi PPSU Pisangan Baru</h1>
-            
-
             
             <!-- Navigation -->
             <div class="flex flex-col sm:flex-row justify-center mt-4 sm:mt-6 gap-3 sm:gap-4 nav-buttons px-2 sm:px-4">
@@ -682,19 +671,6 @@
         <div id="manualPage" class="hidden">
             <!-- Manual Input Content -->
             <div id="manualContent" class="hidden">
-                <!-- Minimalist Connection Status -->
-                <div class="bg-white rounded-xl card-shadow card-content mb-8">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <h3 class="text-lg font-semibold text-gray-800">📊 Panel Admin</h3>
-                            <p class="text-sm text-gray-600 mt-1">Kelola data kehadiran dan sinkronisasi Firebase</p>
-                        </div>
-                        <div id="connectionStatus" class="flex items-center gap-2">
-                            <div id="connectionDot" class="w-3 h-3 bg-yellow-500 rounded-full animate-pulse"></div>
-                            <span id="connectionText" class="text-sm text-gray-600">Menghubungkan...</span>
-                        </div>
-                    </div>
-                </div>
                 <!-- Form Input -->
                 <div class="bg-white rounded-xl card-shadow card-content mb-8">
                     <h2 class="text-lg sm:text-xl font-semibold mb-4 sm:mb-6 text-gray-800">📝 Input Data Kehadiran</h2>
@@ -832,60 +808,13 @@
                     </div>
                 </div>
 
-                <!-- Firebase Management Section -->
-                <div class="bg-white rounded-xl card-shadow card-content mt-8">
-                    <h3 class="text-lg font-semibold text-gray-800 mb-4">🔥 Manajemen Firebase</h3>
-                    
-                    <!-- Firebase Setup Guide -->
-                    <div id="firebaseSetupGuide" class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
-                        <h4 class="font-semibold text-yellow-900 mb-3">⚠️ Setup Firebase (Opsional)</h4>
-                        <div class="text-sm text-yellow-800 space-y-2">
-                            <p><strong>Saat ini menggunakan penyimpanan lokal browser.</strong></p>
-                            <p>Untuk mengaktifkan sinkronisasi cloud dengan Firebase:</p>
-                            <ol class="list-decimal list-inside space-y-1 ml-2">
-                                <li>Buat project di <a href="https://console.firebase.google.com" target="_blank" class="text-blue-600 underline">Firebase Console</a></li>
-                                <li>Aktifkan Realtime Database</li>
-                                <li>Salin konfigurasi Firebase</li>
-                                <li>Ganti konfigurasi demo di kode dengan konfigurasi asli</li>
-                                <li>Set Database Rules ke public untuk testing</li>
-                            </ol>
-                            <p class="text-xs text-yellow-600 mt-2">💡 Data tetap tersimpan di browser meskipun tanpa Firebase</p>
-                        </div>
-                    </div>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                            <h4 class="font-semibold text-blue-900 mb-2">📊 Status Database</h4>
-                            <div id="firebaseStats" class="text-sm text-blue-800">
-                                <p>Data Kehadiran: <span id="attendanceCount" class="font-bold">0</span> record</p>
-                                <p>Sesi Aktif: <span id="activeSessionCount" class="font-bold">0</span> sesi</p>
-                                <p>Daftar Petugas: <span id="employeeCount" class="font-bold">0</span> nama</p>
-                            </div>
-                        </div>
-                        <div class="bg-green-50 border border-green-200 rounded-lg p-4">
-                            <h4 class="font-semibold text-green-900 mb-2">🔄 Sinkronisasi</h4>
-                            <div class="space-y-2">
-                                <button onclick="syncToFirebase()" class="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm font-medium transition-colors">
-                                    📤 Sync ke Firebase
-                                </button>
-                                <button onclick="loadFromFirebase()" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm font-medium transition-colors">
-                                    📥 Load dari Firebase
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="border-t border-gray-200 pt-4">
-                        <h4 class="font-semibold text-gray-800 mb-3">⚠️ Zona Bahaya</h4>
-                        <div class="flex flex-col sm:flex-row gap-3">
-                            <button onclick="exportToCSV()" class="flex-1 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center gap-2 btn-responsive">
-                                <span>📊</span> 
-                                <span>Export ke Excel</span>
-                            </button>
-                            <button onclick="showClearDataModal()" class="flex-1 bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center gap-2 btn-responsive">
-                                <span>🗑️</span> 
-                                <span>Hapus Semua Data</span>
-                            </button>
-                        </div>
+                <!-- Export Button -->
+                <div class="mt-8 px-4">
+                    <div class="flex justify-center">
+                        <button onclick="exportToCSV()" class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center gap-2 btn-responsive">
+                            <span>📊</span> 
+                            <span>Export ke Excel</span>
+                        </button>
                     </div>
                 </div>
 
@@ -997,43 +926,6 @@
             </div>
         </div>
 
-        <!-- Clear Data Confirmation Modal -->
-        <div id="clearDataModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
-            <div class="modal-content bg-white rounded-xl p-6 w-full max-w-md">
-                <div class="text-center mb-6">
-                    <div class="text-6xl mb-4">⚠️</div>
-                    <h3 class="text-2xl font-bold text-red-600 mb-2">Konfirmasi Hapus Data</h3>
-                    <p class="text-gray-600">Tindakan ini akan menghapus <strong>SEMUA DATA</strong> kehadiran yang tersimpan di Firebase dan tidak dapat dibatalkan!</p>
-                </div>
-                
-                <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-                    <h4 class="font-semibold text-red-800 mb-2">Data yang akan dihapus:</h4>
-                    <ul class="text-sm text-red-700 space-y-1">
-                        <li>• Semua data kehadiran karyawan</li>
-                        <li>• Semua sesi aktif</li>
-                        <li>• Riwayat absensi lengkap</li>
-                        <li>• Data tersimpan di Firebase</li>
-                    </ul>
-                </div>
-                
-                <div class="mb-6">
-                    <label class="flex items-center">
-                        <input type="checkbox" id="confirmDelete" class="mr-3 w-4 h-4 text-red-600">
-                        <span class="text-sm text-gray-700">Saya memahami bahwa tindakan ini tidak dapat dibatalkan</span>
-                    </label>
-                </div>
-                
-                <div class="flex gap-3">
-                    <button onclick="clearAllData()" id="confirmDeleteBtn" class="flex-1 bg-red-600 hover:bg-red-700 text-white px-4 py-3 rounded-lg font-medium transition-colors duration-200 disabled:bg-gray-400 disabled:cursor-not-allowed" disabled>
-                        🗑️ Ya, Hapus Semua Data
-                    </button>
-                    <button onclick="closeClearDataModal()" class="flex-1 bg-gray-500 hover:bg-gray-600 text-white px-4 py-3 rounded-lg font-medium transition-colors duration-200">
-                        Batal
-                    </button>
-                </div>
-            </div>
-        </div>
-
         <!-- Employee Detail Modal -->
         <div id="employeeDetailModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
             <div class="modal-content bg-white rounded-xl p-4 sm:p-6 w-full max-w-6xl max-h-screen overflow-y-auto">
@@ -1110,374 +1002,10 @@
         </div>
     </footer>
 
-    <!-- Firebase SDK -->
-    <script type="module">
-        // Import Firebase modules
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { getDatabase, ref, set, get, push, onValue, off } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
-
-        // Firebase configuration - Demo/Testing Config
-        // PENTING: Ganti dengan konfigurasi Firebase Anda yang sebenarnya
-const firebaseConfig = {
-  apiKey: "AIzaSyD26mSDHSGsjIMEAPtZgN-jd-ODViXe15E",
-  authDomain: "absensi-ppsu-pisbar-f80f5.firebaseapp.com",
-  projectId: "absensi-ppsu-pisbar-f80f5",
-  storageBucket: "absensi-ppsu-pisbar-f80f5.firebasestorage.app",
-  messagingSenderId: "1041519647379",
-  appId: "1:1041519647379:web:c3c57c5fba975ee8558b66"
-};
-
-        // ⚠️ DEMO MODE: Menggunakan localStorage sebagai fallback
-        // Untuk menggunakan Firebase yang sebenarnya:
-        // 1. Buat project di https://console.firebase.google.com
-        // 2. Aktifkan Realtime Database
-        // 3. Ganti konfigurasi di atas dengan konfigurasi project Anda
-
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const database = getDatabase(app);
-        
-        // Global variables for Firebase
-        window.firebaseApp = app;
-        window.firebaseDatabase = database;
-        window.firebaseRef = ref;
-        window.firebaseSet = set;
-        window.firebaseGet = get;
-        window.firebasePush = push;
-        window.firebaseOnValue = onValue;
-        window.firebaseOff = off;
-        
-        // Connection status
-        let isFirebaseConnected = false;
-        
-        // Test Firebase connection
-        async function testFirebaseConnection() {
-            console.log('🔄 Testing Firebase connection...');
-            
-            try {
-                // Try to initialize Firebase with demo config
-                const testDataRef = ref(database, 'connectionTest');
-                await set(testDataRef, { timestamp: Date.now(), status: 'connected' });
-                const snapshot = await get(testDataRef);
-                
-                if (snapshot.exists()) {
-                    console.log('✅ Firebase connected successfully!');
-                    isFirebaseConnected = true;
-                    updateConnectionStatus();
-                    
-                    // Clean up test data
-                    await set(testDataRef, null);
-                    
-                    // Load existing data from Firebase
-                    loadDataFromFirebase();
-                    return true;
-                } else {
-                    throw new Error('Firebase read test failed');
-                }
-                
-            } catch (error) {
-                console.log('⚠️ Firebase tidak tersedia, menggunakan localStorage');
-                console.log('Untuk menggunakan Firebase:');
-                console.log('1. Buat project di https://console.firebase.google.com');
-                console.log('2. Aktifkan Realtime Database');
-                console.log('3. Ganti konfigurasi Firebase di kode');
-                
-                isFirebaseConnected = false;
-                updateConnectionStatus();
-                loadDataFromLocalStorage();
-                return false;
-            }
-        }
-        
-        // Show connection error with details
-        function showConnectionError(message) {
-            console.error('🚨 Connection Error:', message);
-            const statusElement = document.getElementById('connectionStatus');
-            if (statusElement) {
-                statusElement.innerHTML = `<span class="status-indicator status-error">🔴 Error: ${message}</span>`;
-            }
-        }
-        
-        // Update connection status indicator
-        function updateConnectionStatus() {
-            const dotElement = document.getElementById('connectionDot');
-            const textElement = document.getElementById('connectionText');
-            
-            if (dotElement && textElement) {
-                if (isFirebaseConnected) {
-                    dotElement.className = 'w-3 h-3 bg-green-500 rounded-full connection-dot-connected';
-                    textElement.textContent = 'Firebase Aktif';
-                    textElement.className = 'text-sm text-green-600 font-medium';
-                } else {
-                    dotElement.className = 'w-3 h-3 bg-blue-500 rounded-full animate-pulse';
-                    textElement.textContent = 'Mode Lokal';
-                    textElement.className = 'text-sm text-blue-600 font-medium';
-                }
-            }
-            
-            // Update Firebase stats
-            updateFirebaseStats();
-        }
-        
-        // Show Firebase setup help
-        function showFirebaseHelp() {
-            const helpElement = document.getElementById('firebaseHelp');
-            if (helpElement) {
-                helpElement.classList.remove('hidden');
-            }
-        }
-        
-        // Hide Firebase setup help
-        function hideFirebaseHelp() {
-            const helpElement = document.getElementById('firebaseHelp');
-            if (helpElement) {
-                helpElement.classList.add('hidden');
-            }
-        }
-        
-        // Expose functions globally
-        window.showFirebaseHelp = showFirebaseHelp;
-        window.hideFirebaseHelp = hideFirebaseHelp;
-        
-        // Load data from Firebase
-        async function loadDataFromFirebase() {
-            try {
-                // Load attendance data
-                const attendanceRef = ref(database, 'attendanceData');
-                const attendanceSnapshot = await get(attendanceRef);
-                if (attendanceSnapshot.exists()) {
-                    window.attendanceData = Object.values(attendanceSnapshot.val());
-                    localStorage.setItem('attendanceData', JSON.stringify(window.attendanceData));
-                }
-                
-                // Load active sessions
-                const sessionsRef = ref(database, 'activeSessions');
-                const sessionsSnapshot = await get(sessionsRef);
-                if (sessionsSnapshot.exists()) {
-                    window.activeSessions = Object.values(sessionsSnapshot.val());
-                    localStorage.setItem('activeSessions', JSON.stringify(window.activeSessions));
-                }
-                
-                // Load employee list
-                const employeesRef = ref(database, 'employeeList');
-                const employeesSnapshot = await get(employeesRef);
-                if (employeesSnapshot.exists()) {
-                    window.employeeList = employeesSnapshot.val();
-                    localStorage.setItem('employeeList', JSON.stringify(window.employeeList));
-                }
-                
-                // Load selected employee
-                const selectedRef = ref(database, 'selectedEmployee');
-                const selectedSnapshot = await get(selectedRef);
-                if (selectedSnapshot.exists()) {
-                    window.selectedEmployee = selectedSnapshot.val();
-                    localStorage.setItem('selectedEmployee', window.selectedEmployee);
-                }
-                
-                // Load login status
-                const loginRef = ref(database, 'isLoggedIn');
-                const loginSnapshot = await get(loginRef);
-                if (loginSnapshot.exists()) {
-                    window.isLoggedIn = loginSnapshot.val();
-                    localStorage.setItem('isLoggedIn', JSON.stringify(window.isLoggedIn));
-                }
-                
-                console.log('Data loaded from Firebase successfully!');
-                
-                // Set up real-time listeners
-                setupRealtimeListeners();
-                
-            } catch (error) {
-                console.error('Error loading data from Firebase:', error);
-                loadDataFromLocalStorage();
-            }
-        }
-        
-        // Setup real-time listeners
-        function setupRealtimeListeners() {
-            // Listen for attendance data changes
-            const attendanceRef = ref(database, 'attendanceData');
-            onValue(attendanceRef, (snapshot) => {
-                if (snapshot.exists()) {
-                    window.attendanceData = Object.values(snapshot.val());
-                    localStorage.setItem('attendanceData', JSON.stringify(window.attendanceData));
-                    
-                    // Update UI if on admin page
-                    if (window.currentPage === 'manual' && window.isLoggedIn) {
-                        window.renderTable();
-                        window.renderDashboard();
-                        window.updateSummary();
-                    }
-                }
-            });
-            
-            // Listen for active sessions changes
-            const sessionsRef = ref(database, 'activeSessions');
-            onValue(sessionsRef, (snapshot) => {
-                if (snapshot.exists()) {
-                    window.activeSessions = Object.values(snapshot.val());
-                    localStorage.setItem('activeSessions', JSON.stringify(window.activeSessions));
-                    
-                    // Update UI if on realtime page
-                    if (window.currentPage === 'realtime') {
-                        window.renderActiveSessions();
-                    }
-                }
-            });
-            
-            // Listen for employee list changes
-            const employeesRef = ref(database, 'employeeList');
-            onValue(employeesRef, (snapshot) => {
-                if (snapshot.exists()) {
-                    window.employeeList = snapshot.val();
-                    localStorage.setItem('employeeList', JSON.stringify(window.employeeList));
-                    
-                    // Update UI if on realtime page
-                    if (window.currentPage === 'realtime') {
-                        window.renderEmployeeButtons();
-                    }
-                }
-            });
-        }
-        
-        // Save data to Firebase and localStorage
-        async function saveDataToFirebase(dataType, data) {
-            // Always save to localStorage first (as backup)
-            try {
-                localStorage.setItem(dataType, JSON.stringify(data));
-                console.log(`✅ ${dataType} saved to localStorage`);
-            } catch (error) {
-                console.error(`❌ Error saving ${dataType} to localStorage:`, error);
-            }
-            
-            // Try to save to Firebase if connected
-            if (!isFirebaseConnected) {
-                console.log('Firebase not connected, data saved to localStorage only');
-                return false;
-            }
-            
-            try {
-                const dataRef = ref(database, dataType);
-                await set(dataRef, data);
-                console.log(`✅ ${dataType} saved to Firebase successfully!`);
-                return true;
-            } catch (error) {
-                console.error(`❌ Error saving ${dataType} to Firebase:`, error);
-                console.log('Data tetap tersimpan di localStorage');
-                return false;
-            }
-        }
-        
-        // Load data from localStorage (fallback)
-        function loadDataFromLocalStorage() {
-            window.attendanceData = JSON.parse(localStorage.getItem('attendanceData')) || [];
-            window.activeSessions = JSON.parse(localStorage.getItem('activeSessions')) || [];
-            window.employeeList = JSON.parse(localStorage.getItem('employeeList')) || [
-                'Achmad Rosidi', 'Ade Kurniawan', 'Al Azahar', 'Alwi', 'Arif Abdul Rahman',
-                'Asep', 'Chandra Darmawan', 'Daday Sukandar', 'Dea Sabilah Handriyani', 'Deni Arcis',
-                'Dewo Panca Pamungkas', 'Dimas Herwinto Pradana', 'Eris Sumiadi', 'Fida Marzuki Putra', 'Herdinsah',
-                'Hermansyah', 'Hikmatun Nisa', 'Ihsan Muttaqien', 'Ilham Prayitno Yudo', 'Indra Jaya',
-                'Irfan Mahadi', 'M. Yusuf', 'Maryanto', 'Mohamad Irwan Yulianto', 'Muhammad Khomeini',
-                'Nur Iman', 'Nuryana', 'Puji Lestari', 'Pujiyanto', 'Rafly Nugraha',
-                'Rahman', 'Rahmat Agustio', 'Reynaldi Saputra', 'Rizky Prasetia', 'Rohmah',
-                'Sabar Minggudi', 'Siti Marsah', 'Suhanda', 'Supardi', 'Suwandi',
-                'Syaiful Huda', 'Tri Julianto', 'Wiyono Fauzy'
-            ];
-            window.selectedEmployee = localStorage.getItem('selectedEmployee') || null;
-            window.isLoggedIn = JSON.parse(localStorage.getItem('isLoggedIn')) || false;
-            
-            console.log('Data loaded from localStorage (fallback mode)');
-        }
-        
-        // Update Firebase stats display
-        function updateFirebaseStats() {
-            const attendanceCountEl = document.getElementById('attendanceCount');
-            const activeSessionCountEl = document.getElementById('activeSessionCount');
-            const employeeCountEl = document.getElementById('employeeCount');
-            
-            if (attendanceCountEl) attendanceCountEl.textContent = attendanceData.length;
-            if (activeSessionCountEl) activeSessionCountEl.textContent = activeSessions.filter(s => !s.timeOut).length;
-            if (employeeCountEl) employeeCountEl.textContent = employeeList.length;
-        }
-        
-        // Manual sync to Firebase
-        async function syncToFirebase() {
-            if (!isFirebaseConnected) {
-                showNotification('Firebase tidak terhubung!', 'error');
-                return;
-            }
-            
-            try {
-                showNotification('Menyinkronkan data ke Firebase...', 'info');
-                
-                await saveDataToFirebase('attendanceData', attendanceData);
-                await saveDataToFirebase('activeSessions', activeSessions);
-                await saveDataToFirebase('employeeList', employeeList);
-                if (selectedEmployee) {
-                    await saveDataToFirebase('selectedEmployee', selectedEmployee);
-                }
-                
-                showNotification('✅ Data berhasil disinkronkan ke Firebase!', 'success');
-                updateFirebaseStats();
-                
-            } catch (error) {
-                console.error('Sync error:', error);
-                showNotification('❌ Gagal menyinkronkan data: ' + error.message, 'error');
-            }
-        }
-        
-        // Manual load from Firebase
-        async function loadFromFirebase() {
-            if (!isFirebaseConnected) {
-                showNotification('Firebase tidak terhubung!', 'error');
-                return;
-            }
-            
-            try {
-                showNotification('Memuat data dari Firebase...', 'info');
-                
-                await loadDataFromFirebase();
-                
-                // Update UI
-                if (currentPage === 'manual' && isLoggedIn) {
-                    renderTable();
-                    renderDashboard();
-                    updateSummary();
-                }
-                if (currentPage === 'realtime') {
-                    renderActiveSessions();
-                    renderEmployeeButtons();
-                }
-                
-                showNotification('✅ Data berhasil dimuat dari Firebase!', 'success');
-                updateFirebaseStats();
-                
-            } catch (error) {
-                console.error('Load error:', error);
-                showNotification('❌ Gagal memuat data: ' + error.message, 'error');
-            }
-        }
-        
-        // Expose functions globally
-        window.testFirebaseConnection = testFirebaseConnection;
-        window.saveDataToFirebase = saveDataToFirebase;
-        window.loadDataFromFirebase = loadDataFromFirebase;
-        window.loadDataFromLocalStorage = loadDataFromLocalStorage;
-        window.syncToFirebase = syncToFirebase;
-        window.loadFromFirebase = loadFromFirebase;
-        window.updateFirebaseStats = updateFirebaseStats;
-        
-        // Initialize Firebase when page loads
-        window.addEventListener('load', () => {
-            testFirebaseConnection();
-        });
-        
-    </script>
-
     <script>
-        let attendanceData = [];
-        let activeSessions = [];
-        let employeeList = [
+        let attendanceData = JSON.parse(localStorage.getItem('attendanceData')) || [];
+        let activeSessions = JSON.parse(localStorage.getItem('activeSessions')) || [];
+        let employeeList = JSON.parse(localStorage.getItem('employeeList')) || [
             'Achmad Rosidi', 'Ade Kurniawan', 'Al Azahar', 'Alwi', 'Arif Abdul Rahman',
             'Asep', 'Chandra Darmawan', 'Daday Sukandar', 'Dea Sabilah Handriyani', 'Deni Arcis',
             'Dewo Panca Pamungkas', 'Dimas Herwinto Pradana', 'Eris Sumiadi', 'Fida Marzuki Putra', 'Herdinsah',
@@ -1551,7 +1079,6 @@ const firebaseConfig = {
                     renderTable();
                     renderDashboard();
                     updateSummary();
-                    updateFirebaseStats();
                 }, 100);
             } else {
                 showNotification('Username atau password salah!', 'error');
@@ -1725,7 +1252,6 @@ const firebaseConfig = {
                     renderTable();
                     renderDashboard();
                     updateSummary();
-                    updateFirebaseStats();
                 }, 50);
             }
         }
@@ -1869,9 +1395,6 @@ const firebaseConfig = {
             
             employeeList.push(formattedName);
             localStorage.setItem('employeeList', JSON.stringify(employeeList));
-            
-            // Save to Firebase
-            saveDataToFirebase('employeeList', employeeList);
             
             // Clear search and select the new employee
             document.getElementById('employeeSearch').value = '';
@@ -2054,10 +1577,6 @@ const firebaseConfig = {
 
                 activeSessions.push(newSession);
                 localStorage.setItem('activeSessions', JSON.stringify(activeSessions));
-                
-                // Save to Firebase
-                saveDataToFirebase('activeSessions', activeSessions);
-                
                 showNotification(`✅ ${name} berhasil absen masuk pada ${currentTime}!`, 'success');
 
             } else if (attendanceType === 'keluar') {
@@ -2097,10 +1616,6 @@ const firebaseConfig = {
                 attendanceData.push(completedRecord);
                 localStorage.setItem('attendanceData', JSON.stringify(attendanceData));
                 localStorage.setItem('activeSessions', JSON.stringify(activeSessions));
-
-                // Save to Firebase
-                saveDataToFirebase('attendanceData', attendanceData);
-                saveDataToFirebase('activeSessions', activeSessions);
 
                 showNotification(`✅ ${name} berhasil absen keluar pada ${currentTime}!`, 'success');
                 
@@ -2314,19 +1829,14 @@ const firebaseConfig = {
             const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
             document.getElementById('dayOfWeek').value = days[today.getDay()];
             
-            // Load data from localStorage first (immediate)
-            loadDataFromLocalStorage();
-            console.log('✅ Data loaded from localStorage');
-            
-            // Then try to initialize Firebase connection
-            setTimeout(() => {
-                if (typeof window.testFirebaseConnection === 'function') {
-                    window.testFirebaseConnection();
-                } else {
-                    console.log('⚠️ Firebase functions not available, using localStorage only');
-                    updateConnectionStatus();
-                }
-            }, 1000);
+            // Initialize Firebase connection
+            if (typeof window.initializeFirebase === 'function') {
+                window.initializeFirebase();
+            } else {
+                // Fallback to localStorage if Firebase is not available
+                console.log('Firebase not available, using localStorage');
+                loadDataFromLocalStorage();
+            }
             
             showPage('realtime');
         };
@@ -2502,13 +2012,9 @@ const firebaseConfig = {
             attendanceData.push(newRecord);
             localStorage.setItem('attendanceData', JSON.stringify(attendanceData));
             
-            // Save to Firebase
-            saveDataToFirebase('attendanceData', attendanceData);
-            
             renderTable();
             renderDashboard();
             updateSummary();
-            updateFirebaseStats();
             
             this.reset();
             document.getElementById('attendanceDate').value = new Date().toISOString().split('T')[0];
@@ -2799,9 +2305,6 @@ const firebaseConfig = {
 
                 localStorage.setItem('attendanceData', JSON.stringify(attendanceData));
                 
-                // Save to Firebase
-                saveDataToFirebase('attendanceData', attendanceData);
-                
                 renderTable();
                 renderDashboard();
                 updateSummary();
@@ -2816,10 +2319,6 @@ const firebaseConfig = {
             if (confirm('Yakin ingin menghapus data ini?')) {
                 attendanceData = attendanceData.filter(record => record.id !== id);
                 localStorage.setItem('attendanceData', JSON.stringify(attendanceData));
-                
-                // Save to Firebase
-                saveDataToFirebase('attendanceData', attendanceData);
-                
                 renderTable();
                 renderDashboard();
                 updateSummary();
@@ -3525,98 +3024,6 @@ const firebaseConfig = {
             showNotification(`Laporan ${monthNames[monthFilter]} ${yearFilter} berhasil dibuat!`, 'success');
         }
 
-        // Clear data functions
-        function showClearDataModal() {
-            document.getElementById('clearDataModal').classList.remove('hidden');
-            document.getElementById('confirmDelete').checked = false;
-            document.getElementById('confirmDeleteBtn').disabled = true;
-        }
-
-        function closeClearDataModal() {
-            document.getElementById('clearDataModal').classList.add('hidden');
-            document.getElementById('confirmDelete').checked = false;
-            document.getElementById('confirmDeleteBtn').disabled = true;
-        }
-
-        // Enable/disable delete button based on checkbox
-        document.addEventListener('DOMContentLoaded', function() {
-            const confirmCheckbox = document.getElementById('confirmDelete');
-            const confirmBtn = document.getElementById('confirmDeleteBtn');
-            
-            if (confirmCheckbox && confirmBtn) {
-                confirmCheckbox.addEventListener('change', function() {
-                    confirmBtn.disabled = !this.checked;
-                });
-            }
-        });
-
-        // Clear all data from Firebase and localStorage
-        async function clearAllData() {
-            const confirmCheckbox = document.getElementById('confirmDelete');
-            if (!confirmCheckbox.checked) {
-                showNotification('Centang kotak konfirmasi terlebih dahulu!', 'warning');
-                return;
-            }
-
-            try {
-                showNotification('Menghapus semua data...', 'info');
-                
-                // Clear Firebase data
-                if (isFirebaseConnected && window.firebaseDatabase) {
-                    const attendanceRef = window.firebaseRef(window.firebaseDatabase, 'attendanceData');
-                    const sessionsRef = window.firebaseRef(window.firebaseDatabase, 'activeSessions');
-                    const employeesRef = window.firebaseRef(window.firebaseDatabase, 'employeeList');
-                    const selectedRef = window.firebaseRef(window.firebaseDatabase, 'selectedEmployee');
-                    
-                    await window.firebaseSet(attendanceRef, null);
-                    await window.firebaseSet(sessionsRef, null);
-                    await window.firebaseSet(employeesRef, null);
-                    await window.firebaseSet(selectedRef, null);
-                    
-                    console.log('✅ Firebase data cleared successfully');
-                }
-                
-                // Clear localStorage
-                localStorage.removeItem('attendanceData');
-                localStorage.removeItem('activeSessions');
-                localStorage.removeItem('employeeList');
-                localStorage.removeItem('selectedEmployee');
-                
-                // Reset global variables
-                attendanceData = [];
-                activeSessions = [];
-                employeeList = [
-                    'Achmad Rosidi', 'Ade Kurniawan', 'Al Azahar', 'Alwi', 'Arif Abdul Rahman',
-                    'Asep', 'Chandra Darmawan', 'Daday Sukandar', 'Dea Sabilah Handriyani', 'Deni Arcis',
-                    'Dewo Panca Pamungkas', 'Dimas Herwinto Pradana', 'Eris Sumiadi', 'Fida Marzuki Putra', 'Herdinsah',
-                    'Hermansyah', 'Hikmatun Nisa', 'Ihsan Muttaqien', 'Ilham Prayitno Yudo', 'Indra Jaya',
-                    'Irfan Mahadi', 'M. Yusuf', 'Maryanto', 'Mohamad Irwan Yulianto', 'Muhammad Khomeini',
-                    'Nur Iman', 'Nuryana', 'Puji Lestari', 'Pujiyanto', 'Rafly Nugraha',
-                    'Rahman', 'Rahmat Agustio', 'Reynaldi Saputra', 'Rizky Prasetia', 'Rohmah',
-                    'Sabar Minggudi', 'Siti Marsah', 'Suhanda', 'Supardi', 'Suwandi',
-                    'Syaiful Huda', 'Tri Julianto', 'Wiyono Fauzy'
-                ];
-                selectedEmployee = null;
-                
-                // Update UI
-                renderTable();
-                renderDashboard();
-                updateSummary();
-                renderActiveSessions();
-                renderEmployeeButtons();
-                clearSelection();
-                
-                // Close modal
-                closeClearDataModal();
-                
-                showNotification('✅ Semua data berhasil dihapus!', 'success');
-                
-            } catch (error) {
-                console.error('❌ Error clearing data:', error);
-                showNotification('❌ Gagal menghapus data: ' + error.message, 'error');
-            }
-        }
-
         // Export recap to CSV
         function exportRecapToCSV() {
             const monthFilter = document.getElementById('monthFilter').value;
@@ -3724,6 +3131,5 @@ const firebaseConfig = {
             showNotification('Rekap berhasil diekspor ke Excel!', 'success');
         }
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'973b7cee1096fdf2',t:'MTc1NTk2MTMxNS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'973c67a01702f92c',t:'MTc1NTk3MDkyOS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
-
