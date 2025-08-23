@@ -837,175 +837,19 @@
                     <h3 class="text-lg font-semibold text-gray-800 mb-4">🔥 Manajemen Firebase</h3>
                     
                     <!-- Firebase Setup Guide -->
-                    <div id="firebaseSetupGuide" class="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
-                        <h4 class="font-semibold text-blue-900 mb-4">🔥 Panduan Setup Firebase Lengkap</h4>
-                        
-                        <!-- Current Status -->
-                        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4">
-                            <p class="text-sm text-yellow-800">
-                                <strong>Status:</strong> Saat ini menggunakan penyimpanan lokal browser. 
-                                Data tersimpan aman di perangkat ini, namun tidak tersinkron antar device.
-                            </p>
-                        </div>
-                        
-                        <!-- Step by Step Guide -->
-                        <div class="space-y-4">
-                            <div class="border-l-4 border-blue-500 pl-4">
-                                <h5 class="font-semibold text-blue-900 mb-2">📋 Langkah 1: Buat Project Firebase</h5>
-                                <ol class="list-decimal list-inside space-y-1 text-sm text-blue-800">
-                                    <li>Buka <a href="https://console.firebase.google.com" target="_blank" class="text-blue-600 underline font-medium">Firebase Console</a></li>
-                                    <li>Klik "Add project" atau "Tambah project"</li>
-                                    <li>Masukkan nama project: <code class="bg-gray-100 px-2 py-1 rounded">absensi-ppsu-pisangan</code></li>
-                                    <li>Disable Google Analytics (tidak diperlukan)</li>
-                                    <li>Klik "Create project"</li>
-                                </ol>
-                            </div>
-                            
-                            <div class="border-l-4 border-green-500 pl-4">
-                                <h5 class="font-semibold text-green-900 mb-2">🗄️ Langkah 2: Setup Realtime Database</h5>
-                                <ol class="list-decimal list-inside space-y-1 text-sm text-green-800">
-                                    <li>Di sidebar kiri, pilih "Realtime Database"</li>
-                                    <li>Klik "Create Database"</li>
-                                    <li>Pilih lokasi: <strong>asia-southeast1 (Singapore)</strong></li>
-                                    <li>Pilih "Start in test mode" (untuk development)</li>
-                                    <li>Klik "Enable"</li>
-                                </ol>
-                            </div>
-                            
-                            <div class="border-l-4 border-purple-500 pl-4">
-                                <h5 class="font-semibold text-purple-900 mb-2">⚙️ Langkah 3: Dapatkan Konfigurasi</h5>
-                                <ol class="list-decimal list-inside space-y-1 text-sm text-purple-800">
-                                    <li>Klik ⚙️ (Settings) di sidebar → "Project settings"</li>
-                                    <li>Scroll ke bawah, klik "Add app" → pilih Web (</> icon)</li>
-                                    <li>Masukkan app nickname: <code class="bg-gray-100 px-2 py-1 rounded">Absensi PPSU</code></li>
-                                    <li>Jangan centang "Firebase Hosting"</li>
-                                    <li>Klik "Register app"</li>
-                                    <li><strong>Salin konfigurasi yang muncul!</strong></li>
-                                </ol>
-                            </div>
-                            
-                            <div class="border-l-4 border-red-500 pl-4">
-                                <h5 class="font-semibold text-red-900 mb-2">🔧 Langkah 4: Update Kode</h5>
-                                <div class="text-sm text-red-800 space-y-2">
-                                    <p>Ganti konfigurasi di baris 1104-1112 dengan konfigurasi Anda:</p>
-                                    <div class="bg-gray-900 text-green-400 p-3 rounded text-xs overflow-x-auto">
-<pre>const firebaseConfig = {
-  apiKey: "AIzaSyXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-  authDomain: "absensi-ppsu-pisangan.firebaseapp.com",
-  databaseURL: "https://absensi-ppsu-pisangan-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "absensi-ppsu-pisangan",
-  storageBucket: "absensi-ppsu-pisangan.appspot.com",
-  messagingSenderId: "123456789012",
-  appId: "1:123456789012:web:abcdef123456789"
-};</pre>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="border-l-4 border-orange-500 pl-4">
-                                <h5 class="font-semibold text-orange-900 mb-2">🔒 Langkah 5: Set Database Rules</h5>
-                                <div class="text-sm text-orange-800 space-y-2">
-                                    <p>Di Realtime Database → Rules tab, ganti rules dengan:</p>
-                                    <div class="bg-gray-900 text-yellow-400 p-3 rounded text-xs overflow-x-auto">
-<pre>{
-  "rules": {
-    ".read": true,
-    ".write": true
-  }
-}</pre>
-                                    </div>
-                                    <p class="text-xs text-orange-600">⚠️ Rules ini untuk development. Untuk production, gunakan rules yang lebih aman.</p>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Benefits -->
-                        <div class="mt-6 bg-green-50 border border-green-200 rounded-lg p-4">
-                            <h5 class="font-semibold text-green-900 mb-2">✅ Keuntungan Firebase:</h5>
-                            <ul class="list-disc list-inside text-sm text-green-800 space-y-1">
-                                <li>Data tersinkron real-time antar semua device</li>
-                                <li>Backup otomatis ke cloud Google</li>
-                                <li>Akses dari mana saja dengan internet</li>
-                                <li>Tidak hilang meski browser di-reset</li>
-                                <li>Multiple admin bisa akses bersamaan</li>
-                            </ul>
-                        </div>
-                        
-                        <!-- Production Rules -->
-                        <div class="mt-4 bg-purple-50 border border-purple-200 rounded-lg p-4">
-                            <h5 class="font-semibold text-purple-900 mb-2">🔐 Rules untuk Production (Aman)</h5>
-                            <p class="text-sm text-purple-800 mb-3">Setelah testing selesai, ganti dengan rules yang lebih aman:</p>
-                            <div class="bg-gray-900 text-purple-400 p-3 rounded text-xs overflow-x-auto">
-<pre>{
-  "rules": {
-    "attendanceData": {
-      ".read": true,
-      ".write": true,
-      ".validate": "newData.hasChildren(['name', 'date', 'timeIn', 'timeOut'])"
-    },
-    "activeSessions": {
-      ".read": true,
-      ".write": true,
-      ".validate": "newData.hasChildren(['name', 'date', 'timeIn'])"
-    },
-    "employeeList": {
-      ".read": true,
-      ".write": true
-    },
-    "selectedEmployee": {
-      ".read": true,
-      ".write": true
-    },
-    "$other": {
-      ".read": false,
-      ".write": false
-    }
-  }
-}</pre>
-                            </div>
-                            <div class="mt-3 space-y-1 text-xs text-purple-700">
-                                <p>• <strong>attendanceData:</strong> Validasi data kehadiran harus lengkap</p>
-                                <p>• <strong>activeSessions:</strong> Validasi sesi aktif minimal ada nama, tanggal, jam masuk</p>
-                                <p>• <strong>employeeList:</strong> Daftar karyawan bisa dibaca/tulis</p>
-                                <p>• <strong>$other:</strong> Path lain tidak bisa diakses (keamanan)</p>
-                            </div>
-                        </div>
-                        
-                        <!-- Advanced Security Rules -->
-                        <div class="mt-4 bg-indigo-50 border border-indigo-200 rounded-lg p-4">
-                            <h5 class="font-semibold text-indigo-900 mb-2">🛡️ Rules Super Aman (dengan Authentication)</h5>
-                            <p class="text-sm text-indigo-800 mb-3">Jika ingin keamanan maksimal, aktifkan Firebase Auth dan gunakan:</p>
-                            <div class="bg-gray-900 text-indigo-400 p-3 rounded text-xs overflow-x-auto">
-<pre>{
-  "rules": {
-    ".read": "auth != null",
-    ".write": "auth != null",
-    "attendanceData": {
-      ".validate": "newData.hasChildren(['name', 'date', 'timeIn', 'timeOut'])",
-      "$recordId": {
-        ".validate": "newData.child('name').isString() && newData.child('date').isString()"
-      }
-    },
-    "activeSessions": {
-      ".validate": "newData.hasChildren(['name', 'date', 'timeIn'])"
-    }
-  }
-}</pre>
-                            </div>
-                            <p class="text-xs text-indigo-600 mt-2">⚠️ Memerlukan setup Firebase Authentication terlebih dahulu</p>
-                        </div>
-                        
-                        <!-- Troubleshooting -->
-                        <div class="mt-4 bg-red-50 border border-red-200 rounded-lg p-4">
-                            <h5 class="font-semibold text-red-900 mb-2">🚨 Troubleshooting:</h5>
-                            <ul class="list-disc list-inside text-sm text-red-800 space-y-1">
-                                <li><strong>Error "Permission denied":</strong> Periksa Database Rules</li>
-                                <li><strong>Error "Network error":</strong> Periksa koneksi internet</li>
-                                <li><strong>Error "Invalid config":</strong> Periksa konfigurasi Firebase</li>
-                                <li><strong>Data tidak sync:</strong> Refresh halaman atau periksa console browser</li>
-                                <li><strong>Rules tidak berlaku:</strong> Tunggu 1-2 menit setelah update rules</li>
-                                <li><strong>CORS error:</strong> Pastikan domain sudah terdaftar di Firebase Console</li>
-                            </ul>
+                    <div id="firebaseSetupGuide" class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+                        <h4 class="font-semibold text-yellow-900 mb-3">⚠️ Setup Firebase (Opsional)</h4>
+                        <div class="text-sm text-yellow-800 space-y-2">
+                            <p><strong>Saat ini menggunakan penyimpanan lokal browser.</strong></p>
+                            <p>Untuk mengaktifkan sinkronisasi cloud dengan Firebase:</p>
+                            <ol class="list-decimal list-inside space-y-1 ml-2">
+                                <li>Buat project di <a href="https://console.firebase.google.com" target="_blank" class="text-blue-600 underline">Firebase Console</a></li>
+                                <li>Aktifkan Realtime Database</li>
+                                <li>Salin konfigurasi Firebase</li>
+                                <li>Ganti konfigurasi demo di kode dengan konfigurasi asli</li>
+                                <li>Set Database Rules ke public untuk testing</li>
+                            </ol>
+                            <p class="text-xs text-yellow-600 mt-2">💡 Data tetap tersimpan di browser meskipun tanpa Firebase</p>
                         </div>
                     </div>
                     
@@ -1275,13 +1119,13 @@
         // Firebase configuration - Demo/Testing Config
         // PENTING: Ganti dengan konfigurasi Firebase Anda yang sebenarnya
         const firebaseConfig = {
-  apiKey: "AIzaSyD26mSDHSGsjIMEAPtZgN-jd-ODViXe15E",
-  authDomain: "absensi-ppsu-pisbar-f80f5.firebaseapp.com",
-  projectId: "absensi-ppsu-pisbar-f80f5",
-  storageBucket: "absensi-ppsu-pisbar-f80f5.firebasestorage.app",
-  messagingSenderId: "1041519647379",
-  appId: "1:1041519647379:web:c3c57c5fba975ee8558b66"
-};
+            apiKey: "demo-api-key",
+            authDomain: "demo-project.firebaseapp.com", 
+            databaseURL: "https://demo-project-default-rtdb.firebaseio.com",
+            projectId: "demo-project",
+            storageBucket: "demo-project.appspot.com",
+            messagingSenderId: "123456789",
+            appId: "1:123456789:web:demo123456789"
         };
 
         // ⚠️ DEMO MODE: Menggunakan localStorage sebagai fallback
@@ -3881,5 +3725,5 @@
             showNotification('Rekap berhasil diekspor ke Excel!', 'success');
         }
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'973af77415a3ce82',t:'MTc1NTk1NTg0OC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'973b7cee1096fdf2',t:'MTc1NTk2MTMxNS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
