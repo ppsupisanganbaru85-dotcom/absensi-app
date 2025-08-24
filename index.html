@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Absensi PPSU Pisangan Baru </title>
+    <title>Absensi PPSU Pisangan Baru - Real-time System</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -437,7 +437,7 @@
                         </div>
                         <div>
                             <h1 class="text-xl font-bold text-white">Absensi PPSU Pisangan Baru</h1>
-                            <p class="text-xs text-blue-200">PPSU Attendance System</p>
+                            <p class="text-xs text-blue-200">Real-time Attendance System</p>
                         </div>
                     </div>
                     <div class="flex items-center">
@@ -706,15 +706,13 @@
                                 <thead>
                                     <tr>
                                         <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">Tanggal</th>
-                                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">Nama</th>
-                                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">Shift</th>
+                                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">Nama Petugas</th>
                                         <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">Jam Masuk</th>
                                         <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">Jam Pulang</th>
-                                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">Foto</th>
                                         <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">Keterlambatan</th>
-                                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">Pulang Cepat</th>
                                         <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">Lembur</th>
-                                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">Total Jam</th>
+                                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">Total Jam (Menit)</th>
+                                        <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">Foto Tersimpan</th>
                                         <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">Aksi</th>
                                     </tr>
                                 </thead>
@@ -1060,11 +1058,27 @@
                         };
                         
                         if (change.type === 'added') {
-                            const existingIndex = absensiData.findIndex(item => item.id === newData.id);
-                            if (existingIndex === -1) {
+                            // Enhanced duplicate detection
+                            const existingById = absensiData.findIndex(item => item.id === newData.id);
+                            const existingByNameDate = absensiData.findIndex(item => 
+                                item.nama === newData.nama && 
+                                item.tanggal === newData.tanggal && 
+                                item.id !== newData.id
+                            );
+                            
+                            if (existingById === -1 && existingByNameDate === -1) {
                                 absensiData.unshift(newData);
                                 console.log('➕ Real-time: Data added', newData.nama);
-                                showNotification('Data Baru!', `${newData.nama} baru saja absen`, 'fa-user-plus');
+                                
+                                // Only show notification if not from current session
+                                if (!sessionStorage.getItem(`submitted_${newData.id}`)) {
+                                    showNotification('Data Baru!', `${newData.nama} baru saja absen`, 'fa-user-plus');
+                                }
+                            } else if (existingByNameDate !== -1) {
+                                // Remove duplicate and keep the newer one
+                                absensiData.splice(existingByNameDate, 1);
+                                absensiData.unshift(newData);
+                                console.log('🔄 Real-time: Duplicate resolved for', newData.nama);
                             }
                         }
                         
@@ -1084,16 +1098,47 @@
                         }
                     });
                     
+                    // Remove duplicates based on nama + tanggal (keep latest)
+                    const uniqueData = [];
+                    const seen = new Set();
+                    
+                    absensiData.forEach(item => {
+                        const key = `${item.nama}_${item.tanggal}`;
+                        if (!seen.has(key)) {
+                            seen.add(key);
+                            uniqueData.push(item);
+                        } else {
+                            // Keep the one with more complete data or latest timestamp
+                            const existingIndex = uniqueData.findIndex(existing => 
+                                existing.nama === item.nama && existing.tanggal === item.tanggal
+                            );
+                            if (existingIndex !== -1) {
+                                const existing = uniqueData[existingIndex];
+                                const itemScore = (item.jamMasuk ? 1 : 0) + (item.jamPulang ? 1 : 0) + (item.fotoMasuk ? 1 : 0) + (item.fotoPulang ? 1 : 0);
+                                const existingScore = (existing.jamMasuk ? 1 : 0) + (existing.jamPulang ? 1 : 0) + (existing.fotoMasuk ? 1 : 0) + (existing.fotoPulang ? 1 : 0);
+                                
+                                if (itemScore > existingScore || (itemScore === existingScore && new Date(item.timestamp) > new Date(existing.timestamp))) {
+                                    uniqueData[existingIndex] = item;
+                                }
+                            }
+                        }
+                    });
+                    
+                    absensiData = uniqueData;
+                    
                     // Update localStorage backup
                     localStorage.setItem('absensiPPSUData', JSON.stringify(absensiData));
                     
-                    // Update UI
-                    loadAbsensiHariIni();
-                    updateStats();
-                    if (isLoggedIn && !document.getElementById('adminPage').classList.contains('hidden')) {
-                        loadRekapData();
-                        updateSummaryStats();
-                    }
+                    // Update UI with debouncing
+                    clearTimeout(window.uiUpdateTimer);
+                    window.uiUpdateTimer = setTimeout(() => {
+                        loadAbsensiHariIni();
+                        updateStats();
+                        if (isLoggedIn && !document.getElementById('adminPage').classList.contains('hidden')) {
+                            loadRekapData();
+                            updateSummaryStats();
+                        }
+                    }, 300);
                     
                     updateSyncIndicator('online');
                 }, (error) => {
@@ -1562,6 +1607,9 @@
             try {
                 await saveToFirestore(formData);
                 
+                // Mark this submission in session storage to prevent duplicate notifications
+                sessionStorage.setItem(`submitted_${formData.id}`, 'true');
+                
                 if (existingAbsensi) {
                     // Update existing data in local array
                     const index = absensiData.findIndex(item => item.id === existingAbsensi.id);
@@ -1570,8 +1618,19 @@
                     }
                     showNotification('Data Diperbarui!', `Absensi ${nama} berhasil diupdate`, 'fa-sync-alt');
                 } else {
-                    // Add new data to local array
-                    absensiData.unshift(formData);
+                    // Add new data to local array (check for duplicates first)
+                    const duplicateIndex = absensiData.findIndex(item => 
+                        item.nama === formData.nama && 
+                        item.tanggal === formData.tanggal && 
+                        item.id !== formData.id
+                    );
+                    
+                    if (duplicateIndex !== -1) {
+                        // Replace duplicate with new data
+                        absensiData[duplicateIndex] = formData;
+                    } else {
+                        absensiData.unshift(formData);
+                    }
                     showNotification('Absensi Tersimpan!', `${nama} berhasil absen masuk`, 'fa-user-check');
                 }
 
@@ -1639,73 +1698,70 @@
             });
         }
 
-        // Enhanced load absensi hari ini with real-time indicators
+        // Enhanced load absensi hari ini - HANYA DATA AKTIF (belum selesai)
         function loadAbsensiHariIni() {
             const today = new Date().toISOString().split('T')[0];
-            const todayData = absensiData.filter(item => item.tanggal === today);
+            
+            // FILTER: Hanya tampilkan data yang BELUM SELESAI (belum absen pulang)
+            const activeData = absensiData.filter(item => 
+                item.tanggal === today && 
+                item.jamMasuk && 
+                !item.jamPulang  // Belum absen pulang
+            );
             
             // Sort by timestamp (newest first)
-            todayData.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            activeData.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
             
             const container = document.getElementById('absensiHariIni');
             
-            if (todayData.length === 0) {
+            if (activeData.length === 0) {
                 container.innerHTML = `
                     <div class="text-center py-8">
-                        <i class="fas fa-calendar-times text-4xl text-gray-300 mb-4"></i>
-                        <p class="text-gray-500">Belum ada absensi hari ini</p>
-                        <p class="text-xs text-gray-400 mt-2">Data akan muncul secara real-time</p>
+                        <i class="fas fa-user-clock text-4xl text-gray-300 mb-4"></i>
+                        <p class="text-gray-500">Tidak ada absensi aktif hari ini</p>
+                        <p class="text-xs text-gray-400 mt-2">Data yang sudah selesai otomatis pindah ke rekap</p>
                     </div>
                 `;
                 return;
             }
             
-            container.innerHTML = todayData.map(item => {
-                const stats = calculateWorkStats(item.jamMasuk, item.jamPulang, item.shift);
-                const status = getAttendanceStatus(item.jamMasuk, item.jamPulang, item.shift);
+            container.innerHTML = activeData.map(item => {
                 const timeAgo = getTimeAgo(item.timestamp);
-                
-                let cardClass = 'attendance-card';
-                if (item.jamMasuk && item.jamPulang) {
-                    cardClass += ' hadir';
-                } else if (item.jamMasuk && !item.jamPulang) {
-                    cardClass += ' belum-pulang';
-                } else {
-                    cardClass += ' terlambat';
-                }
+                const workingHours = calculateWorkingHours(item.jamMasuk);
                 
                 return `
-                    <div class="${cardClass} border border-gray-200 rounded-lg p-4 hover:shadow-md transition-all">
+                    <div class="attendance-card belum-pulang border border-orange-200 rounded-lg p-4 hover:shadow-md transition-all bg-orange-50">
                         <div class="flex justify-between items-start mb-3">
                             <div class="flex-1">
                                 <h3 class="font-semibold text-gray-800">${item.nama}</h3>
                                 <p class="text-sm text-gray-600">${item.shift}</p>
                                 <p class="text-xs text-blue-500 mt-1">
-                                    <i class="fas fa-clock mr-1"></i>${timeAgo}
+                                    <i class="fas fa-clock mr-1"></i>Masuk ${timeAgo}
                                 </p>
                             </div>
                             <div class="flex items-center gap-2">
                                 ${item.fotoMasuk ? `<img src="${item.fotoMasuk}" class="photo-thumbnail" onclick="showPhotoModal('${item.fotoMasuk}')" title="Foto Masuk">` : ''}
-                                ${item.fotoPulang ? `<img src="${item.fotoPulang}" class="photo-thumbnail" onclick="showPhotoModal('${item.fotoPulang}')" title="Foto Pulang">` : ''}
-                                <span class="status-badge ${status.class}">${status.text}</span>
+                                <span class="status-badge status-belum-pulang">
+                                    <i class="fas fa-user-clock mr-1"></i>Sedang Bekerja
+                                </span>
                             </div>
                         </div>
                         <div class="grid grid-cols-2 gap-4 text-sm">
                             <div>
-                                <span class="text-gray-600">Masuk:</span>
-                                <span class="font-medium ml-2">${item.jamMasuk || '-'}</span>
+                                <span class="text-gray-600">Jam Masuk:</span>
+                                <span class="font-medium ml-2 text-green-600">${item.jamMasuk}</span>
                             </div>
                             <div>
-                                <span class="text-gray-600">Pulang:</span>
-                                <span class="font-medium ml-2">${item.jamPulang || '-'}</span>
+                                <span class="text-gray-600">Sudah Bekerja:</span>
+                                <span class="font-medium ml-2 text-blue-600">${workingHours}</span>
                             </div>
                         </div>
-                        ${stats.totalJam !== '-' ? `
-                            <div class="mt-2 text-sm">
-                                <span class="text-gray-600">Total Jam:</span>
-                                <span class="font-medium ml-2 text-blue-600">${stats.totalJam}</span>
-                            </div>
-                        ` : ''}
+                        <div class="mt-3 p-2 bg-yellow-100 rounded-lg">
+                            <p class="text-xs text-yellow-800 text-center">
+                                <i class="fas fa-info-circle mr-1"></i>
+                                Menunggu absen pulang - Data akan otomatis pindah ke rekap setelah absen pulang
+                            </p>
+                        </div>
                         ${item.catatan ? `<p class="text-sm text-gray-600 mt-2 italic">"${item.catatan}"</p>` : ''}
                     </div>
                 `;
@@ -1727,6 +1783,26 @@
             return time.toLocaleDateString('id-ID');
         }
 
+        // Calculate working hours from jam masuk until now
+        function calculateWorkingHours(jamMasuk) {
+            if (!jamMasuk) return '-';
+            
+            const now = new Date();
+            const today = now.toISOString().split('T')[0];
+            const masukTime = new Date(`${today}T${jamMasuk}:00`);
+            
+            const diffInMinutes = Math.floor((now - masukTime) / (1000 * 60));
+            
+            if (diffInMinutes < 0) return '-';
+            if (diffInMinutes < 60) return `${diffInMinutes} menit`;
+            
+            const hours = Math.floor(diffInMinutes / 60);
+            const minutes = diffInMinutes % 60;
+            
+            if (minutes === 0) return `${hours} jam`;
+            return `${hours} jam ${minutes} menit`;
+        }
+
         // Get attendance status
         function getAttendanceStatus(jamMasuk, jamPulang, shift) {
             if (!jamMasuk) return { text: 'Belum Absen', class: 'status-badge bg-gray-100 text-gray-600' };
@@ -1746,7 +1822,7 @@
             return { text: 'Hadir', class: 'status-hadir' };
         }
 
-        // Enhanced update stats with real-time counters
+        // Enhanced update stats with real-time counters - SESUAI ALUR BARU
         function updateStats() {
             const today = new Date().toISOString().split('T')[0];
             const todayData = absensiData.filter(item => item.tanggal === today);
@@ -1754,11 +1830,17 @@
             let hadir = 0, terlambat = 0, belumPulang = 0;
             
             todayData.forEach(item => {
+                // Hadir = yang sudah absen masuk (termasuk yang belum pulang)
                 if (item.jamMasuk) hadir++;
+                
+                // Belum Pulang = yang sudah masuk tapi belum pulang
                 if (item.jamMasuk && !item.jamPulang) belumPulang++;
                 
-                const stats = calculateWorkStatsDetailed(item.jamMasuk, item.jamPulang, item.shift);
-                if (stats.keterlambatanMenit > 0) terlambat++;
+                // Terlambat = yang terlambat masuk (hanya yang sudah selesai absen)
+                if (item.jamMasuk && item.jamPulang) {
+                    const stats = calculateWorkStatsDetailed(item.jamMasuk, item.jamPulang, item.shift);
+                    if (stats.keterlambatanMenit > 0) terlambat++;
+                }
             });
             
             // Animate counter updates
@@ -1790,53 +1872,57 @@
             }, stepDuration);
         }
 
-        // Enhanced load rekap data with real-time updates
+        // Enhanced load rekap data - HANYA DATA SELESAI (sudah absen pulang)
         function loadRekapData() {
             const tableBody = document.getElementById('rekapTableBody');
             const mobileCards = document.getElementById('rekapMobileCards');
             
-            if (absensiData.length === 0) {
+            // FILTER: Hanya tampilkan data yang SUDAH SELESAI (sudah absen pulang)
+            const completedData = absensiData.filter(item => 
+                item.jamMasuk && item.jamPulang  // Sudah absen masuk DAN pulang
+            );
+            
+            if (completedData.length === 0) {
                 const emptyMessage = `
                     <div class="text-center py-8">
-                        <i class="fas fa-chart-line text-4xl text-gray-300 mb-4"></i>
-                        <p class="text-gray-500">Belum ada data absensi</p>
-                        <p class="text-xs text-gray-400 mt-2">Data akan muncul secara real-time</p>
+                        <i class="fas fa-archive text-4xl text-gray-300 mb-4"></i>
+                        <p class="text-gray-500">Belum ada data absensi yang selesai</p>
+                        <p class="text-xs text-gray-400 mt-2">Data akan muncul otomatis setelah absen pulang</p>
                     </div>
                 `;
-                tableBody.innerHTML = '<tr><td colspan="11" class="text-center py-8 text-gray-500">Belum ada data absensi</td></tr>';
+                tableBody.innerHTML = '<tr><td colspan="9" class="text-center py-8 text-gray-500">Belum ada data absensi yang selesai</td></tr>';
                 mobileCards.innerHTML = emptyMessage;
                 return;
             }
 
             // Sort data by timestamp (newest first)
-            const sortedData = [...absensiData].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            const sortedData = [...completedData].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
             
             // Desktop table
             tableBody.innerHTML = sortedData.map(item => {
                 const stats = calculateWorkStatsDetailed(item.jamMasuk, item.jamPulang, item.shift);
                 const displayDate = new Date(item.tanggal).toLocaleDateString('id-ID');
-                const timeAgo = getTimeAgo(item.timestamp);
                 
                 return `
                     <tr class="hover:bg-gray-50">
                         <td class="border border-gray-300 px-4 py-3 text-sm">
                             ${displayDate}
-                            <div class="text-xs text-blue-500">${timeAgo}</div>
                         </td>
                         <td class="border border-gray-300 px-4 py-3 text-sm font-medium">${item.nama}</td>
-                        <td class="border border-gray-300 px-4 py-3 text-sm">${item.shift}</td>
-                        <td class="border border-gray-300 px-4 py-3 text-sm">${item.jamMasuk || '-'}</td>
-                        <td class="border border-gray-300 px-4 py-3 text-sm">${item.jamPulang || '-'}</td>
+                        <td class="border border-gray-300 px-4 py-3 text-sm font-semibold text-green-600">${item.jamMasuk}</td>
+                        <td class="border border-gray-300 px-4 py-3 text-sm font-semibold text-red-600">${item.jamPulang}</td>
+                        <td class="border border-gray-300 px-4 py-3 text-sm ${stats.keterlambatanMenit > 0 ? 'text-red-600 font-semibold' : 'text-gray-500'}">${stats.keterlambatan}</td>
+                        <td class="border border-gray-300 px-4 py-3 text-sm ${stats.lemburMenit > 0 ? 'text-purple-600 font-semibold' : 'text-gray-500'}">${stats.lembur}</td>
+                        <td class="border border-gray-300 px-4 py-3 text-sm font-bold text-blue-600">
+                            ${stats.totalMenit} menit
+                            <div class="text-xs text-gray-500">(${stats.totalJam})</div>
+                        </td>
                         <td class="border border-gray-300 px-4 py-3 text-center">
                             <div class="flex gap-1 justify-center">
-                                ${item.fotoMasuk ? `<img src="${item.fotoMasuk}" class="photo-thumbnail" onclick="showPhotoModal('${item.fotoMasuk}')" title="Foto Masuk">` : '<span class="text-gray-400 text-xs">-</span>'}
-                                ${item.fotoPulang ? `<img src="${item.fotoPulang}" class="photo-thumbnail" onclick="showPhotoModal('${item.fotoPulang}')" title="Foto Pulang">` : ''}
+                                ${item.fotoMasuk ? `<img src="${item.fotoMasuk}" class="photo-thumbnail border-green-400" onclick="showPhotoModal('${item.fotoMasuk}')" title="Foto Masuk">` : '<span class="text-gray-400 text-xs">-</span>'}
+                                ${item.fotoPulang ? `<img src="${item.fotoPulang}" class="photo-thumbnail border-red-400" onclick="showPhotoModal('${item.fotoPulang}')" title="Foto Pulang">` : '<span class="text-gray-400 text-xs">-</span>'}
                             </div>
                         </td>
-                        <td class="border border-gray-300 px-4 py-3 text-sm ${stats.keterlambatanMenit > 0 ? 'text-red-600 font-semibold' : ''}">${stats.keterlambatan}</td>
-                        <td class="border border-gray-300 px-4 py-3 text-sm ${stats.pulangCepatMenit > 0 ? 'text-orange-600 font-semibold' : ''}">${stats.pulangCepat}</td>
-                        <td class="border border-gray-300 px-4 py-3 text-sm ${stats.lemburMenit > 0 ? 'text-purple-600 font-semibold' : ''}">${stats.lembur}</td>
-                        <td class="border border-gray-300 px-4 py-3 text-sm font-semibold text-blue-600">${stats.totalJam}</td>
                         <td class="border border-gray-300 px-4 py-3">
                             <div class="flex gap-1">
                                 <button onclick="editAbsensi('${item.id}')" class="bg-blue-500 text-white px-2 py-1 rounded text-xs hover:bg-blue-600" title="Edit">
@@ -2080,13 +2166,13 @@
                             <table class="w-full">
                                 <thead class="bg-gray-50">
                                     <tr>
-                                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Nama</th>
-                                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Shift</th>
+                                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Nama Petugas</th>
                                         <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Jam Masuk</th>
                                         <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Jam Pulang</th>
-                                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Total Jam</th>
                                         <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Keterlambatan</th>
                                         <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Lembur</th>
+                                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Total Jam (Menit)</th>
+                                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Foto</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-gray-200">
@@ -2095,12 +2181,20 @@
                                         return `
                                             <tr class="hover:bg-gray-50">
                                                 <td class="px-4 py-3 text-sm font-medium text-gray-800">${item.nama}</td>
-                                                <td class="px-4 py-3 text-sm text-gray-600">${item.shift}</td>
-                                                <td class="px-4 py-3 text-sm text-gray-600">${item.jamMasuk || '-'}</td>
-                                                <td class="px-4 py-3 text-sm text-gray-600">${item.jamPulang || '-'}</td>
-                                                <td class="px-4 py-3 text-sm font-semibold text-blue-600">${stats.totalJam}</td>
-                                                <td class="px-4 py-3 text-sm ${stats.keterlambatanMenit > 0 ? 'text-red-600 font-semibold' : 'text-gray-600'}">${stats.keterlambatan}</td>
-                                                <td class="px-4 py-3 text-sm ${stats.lemburMenit > 0 ? 'text-purple-600 font-semibold' : 'text-gray-600'}">${stats.lembur}</td>
+                                                <td class="px-4 py-3 text-sm font-semibold text-green-600">${item.jamMasuk || '-'}</td>
+                                                <td class="px-4 py-3 text-sm font-semibold text-red-600">${item.jamPulang || '-'}</td>
+                                                <td class="px-4 py-3 text-sm ${stats.keterlambatanMenit > 0 ? 'text-red-600 font-semibold' : 'text-gray-500'}">${stats.keterlambatan}</td>
+                                                <td class="px-4 py-3 text-sm ${stats.lemburMenit > 0 ? 'text-purple-600 font-semibold' : 'text-gray-500'}">${stats.lembur}</td>
+                                                <td class="px-4 py-3 text-sm font-bold text-blue-600">
+                                                    ${stats.totalMenit} menit
+                                                    <div class="text-xs text-gray-500">(${stats.totalJam})</div>
+                                                </td>
+                                                <td class="px-4 py-3 text-center">
+                                                    <div class="flex gap-1 justify-center">
+                                                        ${item.fotoMasuk ? `<img src="${item.fotoMasuk}" class="photo-thumbnail border-green-400" onclick="showPhotoModal('${item.fotoMasuk}')" title="Foto Masuk">` : '<span class="text-gray-400 text-xs">-</span>'}
+                                                        ${item.fotoPulang ? `<img src="${item.fotoPulang}" class="photo-thumbnail border-red-400" onclick="showPhotoModal('${item.fotoPulang}')" title="Foto Pulang">` : '<span class="text-gray-400 text-xs">-</span>'}
+                                                    </div>
+                                                </td>
                                             </tr>
                                         `;
                                     }).join('')}
@@ -2248,30 +2342,37 @@
                                 <thead class="bg-gray-50">
                                     <tr>
                                         <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Tanggal</th>
-                                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Nama</th>
-                                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Shift</th>
+                                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Nama Petugas</th>
                                         <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Jam Masuk</th>
                                         <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Jam Pulang</th>
-                                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Total Jam</th>
-                                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Status</th>
+                                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Keterlambatan</th>
+                                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Lembur</th>
+                                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Total Jam (Menit)</th>
+                                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Foto</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-gray-200">
                                     ${filteredData.sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal)).map(item => {
                                         const stats = calculateWorkStatsDetailed(item.jamMasuk, item.jamPulang, item.shift);
                                         const displayDate = new Date(item.tanggal).toLocaleDateString('id-ID');
-                                        const status = getAttendanceStatus(item.jamMasuk, item.jamPulang, item.shift);
                                         
                                         return `
                                             <tr class="hover:bg-gray-50">
                                                 <td class="px-4 py-3 text-sm text-gray-600">${displayDate}</td>
                                                 <td class="px-4 py-3 text-sm font-medium text-gray-800">${item.nama}</td>
-                                                <td class="px-4 py-3 text-sm text-gray-600">${item.shift}</td>
-                                                <td class="px-4 py-3 text-sm text-gray-600">${item.jamMasuk || '-'}</td>
-                                                <td class="px-4 py-3 text-sm text-gray-600">${item.jamPulang || '-'}</td>
-                                                <td class="px-4 py-3 text-sm font-semibold text-blue-600">${stats.totalJam}</td>
-                                                <td class="px-4 py-3 text-sm">
-                                                    <span class="status-badge ${status.class}">${status.text}</span>
+                                                <td class="px-4 py-3 text-sm font-semibold text-green-600">${item.jamMasuk || '-'}</td>
+                                                <td class="px-4 py-3 text-sm font-semibold text-red-600">${item.jamPulang || '-'}</td>
+                                                <td class="px-4 py-3 text-sm ${stats.keterlambatanMenit > 0 ? 'text-red-600 font-semibold' : 'text-gray-500'}">${stats.keterlambatan}</td>
+                                                <td class="px-4 py-3 text-sm ${stats.lemburMenit > 0 ? 'text-purple-600 font-semibold' : 'text-gray-500'}">${stats.lembur}</td>
+                                                <td class="px-4 py-3 text-sm font-bold text-blue-600">
+                                                    ${stats.totalMenit} menit
+                                                    <div class="text-xs text-gray-500">(${stats.totalJam})</div>
+                                                </td>
+                                                <td class="px-4 py-3 text-center">
+                                                    <div class="flex gap-1 justify-center">
+                                                        ${item.fotoMasuk ? `<img src="${item.fotoMasuk}" class="photo-thumbnail border-green-400" onclick="showPhotoModal('${item.fotoMasuk}')" title="Foto Masuk">` : '<span class="text-gray-400 text-xs">-</span>'}
+                                                        ${item.fotoPulang ? `<img src="${item.fotoPulang}" class="photo-thumbnail border-red-400" onclick="showPhotoModal('${item.fotoPulang}')" title="Foto Pulang">` : '<span class="text-gray-400 text-xs">-</span>'}
+                                                    </div>
                                                 </td>
                                             </tr>
                                         `;
@@ -2626,6 +2727,50 @@
             document.getElementById('currentDateMobile').textContent = dateString;
         }
 
+        // Clean up duplicate data
+        function cleanupDuplicates() {
+            const uniqueData = [];
+            const seen = new Map();
+            
+            absensiData.forEach(item => {
+                const key = `${item.nama}_${item.tanggal}`;
+                
+                if (!seen.has(key)) {
+                    seen.set(key, item);
+                    uniqueData.push(item);
+                } else {
+                    const existing = seen.get(key);
+                    
+                    // Calculate completeness score
+                    const itemScore = (item.jamMasuk ? 1 : 0) + (item.jamPulang ? 1 : 0) + 
+                                    (item.fotoMasuk ? 1 : 0) + (item.fotoPulang ? 1 : 0);
+                    const existingScore = (existing.jamMasuk ? 1 : 0) + (existing.jamPulang ? 1 : 0) + 
+                                        (existing.fotoMasuk ? 1 : 0) + (existing.fotoPulang ? 1 : 0);
+                    
+                    // Keep the more complete record, or the newer one if equal
+                    if (itemScore > existingScore || 
+                        (itemScore === existingScore && new Date(item.timestamp) > new Date(existing.timestamp))) {
+                        
+                        const existingIndex = uniqueData.findIndex(u => u.nama === existing.nama && u.tanggal === existing.tanggal);
+                        if (existingIndex !== -1) {
+                            uniqueData[existingIndex] = item;
+                            seen.set(key, item);
+                        }
+                    }
+                }
+            });
+            
+            const originalLength = absensiData.length;
+            absensiData = uniqueData;
+            
+            if (originalLength !== absensiData.length) {
+                console.log(`🧹 Cleaned up ${originalLength - absensiData.length} duplicate records`);
+                localStorage.setItem('absensiPPSUData', JSON.stringify(absensiData));
+                return true;
+            }
+            return false;
+        }
+
         // Initialize application
         async function initializeApp() {
             console.log('🚀 Initializing PPSU Pisangan Baru Attendance System...');
@@ -2650,6 +2795,12 @@
             try {
                 absensiData = await loadFromFirestore();
                 console.log(`✅ Loaded ${absensiData.length} attendance records`);
+                
+                // Clean up any duplicates
+                const hadDuplicates = cleanupDuplicates();
+                if (hadDuplicates) {
+                    console.log('🧹 Duplicate cleanup completed');
+                }
                 
                 // Start real-time listener
                 startRealtimeListener();
@@ -2740,5 +2891,5 @@
             localStorage.removeItem('absensiFormAutoSave');
         });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'97419cc972b3fd0e',t:'MTc1NjAyNTUzNS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'97422a6326abfcee',t:'MTc1NjAzMTMzNS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
